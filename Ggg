@@ -1,0 +1,43 @@
+import numpy as np
+
+def is_point_within_parallelepiped(point, p1, p2, p3, p4, p5, p6, p7, p8):
+    A = np.array([p1, p2, p3, p4, p5, p6, p7, p8])
+    b = np.array(point)
+    v1 = A[1] - A[0]
+    v2 = A[2] - A[0]
+    v3 = A[4] - A[0]
+    v = b - A[0]
+    dot_prod = np.dot(v, v1) * np.dot(v, v2) * np.dot(v, v3)
+    return 0 <= np.dot(v1, v) <= np.dot(v1, v1) and \
+           0 <= np.dot(v2, v) <= np.dot(v2, v2) and \
+           0 <= np.dot(v3, v) <= np.dot(v3, v3) and \
+           dot_prod <= 0
+
+def find_nearest_point_on_surface(point, p1, p2, p3, p4, p5, p6, p7, p8):
+    A = np.array([p1, p2, p3, p4, p5, p6, p7, p8])
+    b = np.array(point)
+    v1 = A[1] - A[0]
+    v2 = A[2] - A[0]
+    v3 = A[4] - A[0]
+    v = b - A[0]
+    x = np.clip(np.dot(v1, v), 0, np.dot(v1, v1)) / np.dot(v1, v1)
+    y = np.clip(np.dot(v2, v), 0, np.dot(v2, v2)) / np.dot(v2, v2)
+    z = np.clip(np.dot(v3, v), 0, np.dot(v3, v3)) / np.dot(v3, v3)
+    return A[0] + x * v1 + y * v2 + z * v3
+
+# Example usage
+point = [2, 3, 4]
+p1 = [0, 0, 0]
+p2 = [4, 0, 0]
+p3 = [4, 5, 0]
+p4 = [0, 5, 0]
+p5 = [0, 0, 3]
+p6 = [4, 0, 3]
+p7 = [4, 5, 3]
+p8 = [0, 5, 3]
+
+if is_point_within_parallelepiped(point, p1, p2, p3, p4, p5, p6, p7, p8):
+    print("The point is within the parallelepiped.")
+else:
+    nearest_point = find_nearest_point_on_surface(point, p1, p2, p3, p4, p5, p6, p7, p8)
+    print("The point is outside the parallelepiped. Nearest point on the surface:", nearest_point)
