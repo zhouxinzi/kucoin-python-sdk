@@ -1,0 +1,45 @@
+import numpy as np
+from scipy.spatial import ConvexHull
+
+def is_point_within_parallelepiped(point, p1, p2, p3, p4, p5, p6, p7, p8):
+    parallelepiped_points = np.array([p1, p2, p3, p4, p5, p6, p7, p8])
+    hull = ConvexHull(parallelepiped_points)
+    return hull.equations.dot(np.hstack((point, 1))) >= 0
+
+def find_nearest_point_on_surface(point, p1, p2, p3, p4, p5, p6, p7, p8):
+    parallelepiped_points = np.array([p1, p2, p3, p4, p5, p6, p7, p8])
+    distances = np.linalg.norm(parallelepiped_points - point, axis=1)
+    closest_index = np.argmin(distances)
+    
+    hull = ConvexHull(parallelepiped_points)
+    vertices = parallelepiped_points[hull.vertices]
+    closest_point = vertices[np.argmin(np.linalg.norm(vertices - point, axis=1))]
+    
+    # Check the intersection point with each face of the parallelepiped
+    for simplex in hull.simplices:
+        simplex_points = parallelepiped_points[simplex]
+        normal = np.cross(simplex_points[1] - simplex_points[0], simplex_points[2] - simplex_points[0])
+        intersection_point = point - np.dot(point - simplex_points[0], normal) / np.dot(normal, normal) * normal
+        if is_point_within_parallelepiped(intersection_point, *simplex_points):
+            distance = np.linalg.norm(point - intersection_point)
+            if distance < np.linalg.norm(point - closest_point):
+                closest_point = intersection_point
+    
+    return closest_point
+
+# Example usage
+point = [2, 3, 4]
+p1 = [0, 0, 0]
+p2 = [4, 0, 0]
+p3 = [4, 5, 0]
+p4 = [0, 5, 0]
+p5 = [0, 0, 3]
+p6 = [4, 0, 3]
+p7 = [4, 5, 3]
+p8 = [0, 5, 3]
+
+if is_point_within_parallelepiped(point, p1, p2, p3, p4, p5, p6, p7, p8):
+    print("The point is within the parallelepiped.")
+else:
+    nearest_point = find_nearest_point_on_surface(point, p1, p2, p3, p4, p5, p6, p7, p8)
+    print("The closest point on the surface of the parallelepiped:", nearest_point)
